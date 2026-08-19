@@ -18,6 +18,10 @@ export async function handleSchedule(env) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    const host = request.headers.get("host") || url.hostname;
+    if (host.includes("workers.dev") || url.hostname.includes("workers.dev")) {
+      return new Response("Not found", { status: 404 });
+    }
     if (url.pathname === "/api/schedule") {
       return handleSchedule(env);
     }

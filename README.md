@@ -68,6 +68,8 @@ Wrangler uploads the Worker and `site/` assets directly. It does not clone, fork
 
 Add a custom hostname such as `oncall.isco-pipe.com` to the Worker. In Cloudflare Zero Trust, create a **Self-hosted** Access application for that hostname. Allow only ISCO Entra identities and cover `/*` so `/api/schedule` is protected too.
 
+The Worker deliberately returns `404` for its `workers.dev` hostname. The schedule API is therefore unavailable until the custom hostname is attached; this prevents the platform preview URL from bypassing the Access policy.
+
 ## Publish private schedule data
 
 The publisher runs only from trusted Hermes automation. It never writes schedule data into Git.
