@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>ISCO After-Hours On-Call</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="masthead">
+      <p class="eyebrow">ISCO IT OPERATIONS</p>
+      <h1>After-Hours On-Call</h1>
+      <p id="timezone" class="subheading">Loading schedule…</p>
+    </header>
+
+    <section class="now-card" aria-labelledby="current-heading">
+      <div>
+        <p class="eyebrow">CURRENT ROTATION</p>
+        <h2 id="current-heading"><span id="current-primary">—</span> <span class="is-on-call">is on call</span></h2>
+        <p id="current-range">Schedule loading…</p>
+      </div>
+      <div class="status-pill"><span></span>Active</div>
+    </section>
+
+    <section class="schedule-section" aria-labelledby="schedule-heading">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">LOOK AHEAD</p>
+          <h2 id="schedule-heading">Rotation calendar</h2>
+        </div>
+        <p id="coverage-through" class="generated"></p>
+      </div>
+      <div id="schedule" class="months" aria-live="polite"></div>
+    </section>
+
+    <footer>
+      <span>View-only schedule • Changes are published by the ISCO on-call automation.</span>
+      <span id="generated-at"></span>
+    </footer>
+  </main>
+  <script src="app.js" defer></script>
+</body>
+</html>
