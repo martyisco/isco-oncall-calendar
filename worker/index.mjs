@@ -1,5 +1,5 @@
-export async function onRequestGet(context) {
-  const schedule = await context.env.ONCALL_SCHEDULE.get("schedule", "json");
+export async function handleSchedule(env) {
+  const schedule = await env.ONCALL_SCHEDULE.get("schedule", "json");
   if (!schedule) {
     return Response.json(
       { error: "The on-call schedule has not been published yet." },
@@ -14,3 +14,13 @@ export async function onRequestGet(context) {
     },
   });
 }
+
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    if (url.pathname === "/api/schedule") {
+      return handleSchedule(env);
+    }
+    return env.ASSETS.fetch(request);
+  },
+};

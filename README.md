@@ -1,78 +1,76 @@
 # ISCO After-Hours On-Call Calendar
 
-A view-only on-call dashboard designed for a **public code repository** without exposing the ISCO roster or on-call schedule. The website is protected at runtime by Cloudflare Access/Entra SSO.
+A view-only on-call dashboard. It deploys **directly to Cloudflare Workers** with static assets—no GitHub/Cloudflare repository connection and no Pages project required.
 
 ## Architecture
 
 ```text
 Public GitHub repository
-  └─ static UI + Pages Function source only; no schedule data
+  └─ application source only; no schedule data
 
-Cloudflare Pages
-  └─ serves site/ and functions/api/schedule.js
+Cloudflare Worker
+  ├─ serves static assets from site/
+  └─ serves GET /api/schedule from Workers KV
 
 Cloudflare Workers KV (private data)
   └─ key: schedule
-  └─ value: generated six-month schedule JSON
+  └─ generated six-month schedule JSON
 
-Cloudflare Access
+Cloudflare Access / Entra SSO
   └─ protects the custom hostname, including /api/schedule
 
-Hermes on-call automation
-  └─ reads the private authoritative YAML, generates six months, writes KV
+Trusted Hermes on-call automation
+  └─ reads private source state, generates six months, writes KV
 ```
 
-The application code cannot administer the roster. It only reads `GET /api/schedule`, which is a Pages Function backed by the `ONCALL_SCHEDULE` KV binding.
+The Worker routes `/api/schedule` to the private `ONCALL_SCHEDULE` KV binding. All other requests are served from the bundled `site/` static assets.
 
-## What is safe to publish
+## Why not “Upload static files” alone?
 
-The repository must contain **only** application code, tests using fictional names, and documentation. Do not commit:
-
-- responder names, email addresses, telephone numbers, or Telegram identities
-- `rotation.yaml`, `schedule.json`, or export files
-- Cloudflare API tokens, account credentials, webhook URLs, or iTop data
-
-> This repository's prior private commits included a schedule-data implementation. Before making the repository public, create a clean public repository from the present allowlisted tree or rewrite Git history. A file deleted from the current branch still exists in prior commits.
+A static-only upload can serve HTML/CSS/JS, but it cannot read Workers KV. Use a **Worker with static assets** so one deployment serves both the website and its protected schedule endpoint. This deployment still has no repository connection: Wrangler directly uploads the Worker and `site/` assets to Cloudflare.
 
 ## Cloudflare setup
 
-### 1. Create the KV namespace
+### 1. KV namespace
 
-In the Cloudflare dashboard, go to **Workers & Pages → KV** and create a namespace, for example `isco-oncall-schedule`.
+Create a KV namespace in **Cloudflare Dashboard → Storage & databases → KV**. The required binding name is:
 
-### 2. Create the Pages project
+`ONCALL_SCHEDULE`
 
-Create a Pages project with **Connect to Git**, choose the repository, and use:
+### 2. Prepare direct Worker deployment
 
-- Production branch: `main`
-- Framework preset: `None`
-- Build command: *(leave blank)*
-- Build output directory: `site`
+Copy `wrangler.jsonc` to your trusted Hermes deployment checkout and replace only:
 
-In the Pages project, add a **KV namespace binding**:
+`REPLACE_WITH_YOUR_KV_NAMESPACE_ID`
 
-- Variable name: `ONCALL_SCHEDULE`
-- KV namespace: `isco-oncall-schedule`
+with the KV namespace ID shown in Cloudflare. Namespace IDs are identifiers, not credentials; do not commit the edited deployment configuration if you prefer to keep account metadata out of the public repository.
 
-The included Pages Function exposes that binding only at `GET /api/schedule`.
+### 3. Create a narrowly scoped API token
 
-### 3. Protect the production hostname
+Create a Cloudflare API token with only:
 
-Attach a custom hostname such as `oncall.isco-pipe.com`. In Cloudflare Zero Trust create an **Access → Applications → Self-hosted** application for that hostname and allow only ISCO Entra users. The policy must cover `/*`, which also protects `/api/schedule`.
+- **Account → Workers Scripts → Edit**
+- **Account → Workers KV Storage → Edit**
 
-Do not circulate the Pages preview hostname as an operational URL. Validate its access behavior separately from the custom-domain Access application.
+Do not paste it in Telegram or commit it. Store it on the Hermes host as `CLOUDFLARE_API_TOKEN`. Also configure `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_KV_NAMESPACE_ID` only in the trusted Hermes environment.
 
-## Publishing private schedule data
+### 4. Direct deploy
 
-The publisher runs only from the trusted Hermes environment, never GitHub Actions in this public repository. It reads the private authoritative state and writes one KV key named `schedule`.
+From the trusted deployment checkout:
 
-Required environment variables are stored outside this repository:
+```bash
+npx wrangler@latest deploy
+```
 
-- `CLOUDFLARE_ACCOUNT_ID`
-- `CLOUDFLARE_KV_NAMESPACE_ID`
-- `CLOUDFLARE_API_TOKEN` — scope it to **Workers KV Storage: Edit** for only the required account/namespace
+Wrangler uploads the Worker and `site/` assets directly. It does not clone, fork, or connect to GitHub.
 
-Example after Cloudflare setup:
+### 5. Custom hostname and Access
+
+Add a custom hostname such as `oncall.isco-pipe.com` to the Worker. In Cloudflare Zero Trust, create a **Self-hosted** Access application for that hostname. Allow only ISCO Entra identities and cover `/*` so `/api/schedule` is protected too.
+
+## Publish private schedule data
+
+The publisher runs only from trusted Hermes automation. It never writes schedule data into Git.
 
 ```bash
 python3 scripts/publish_schedule.py \
@@ -80,19 +78,19 @@ python3 scripts/publish_schedule.py \
   --months-ahead 6
 ```
 
-This regenerates a schedule through the end of the month six months ahead and uploads it directly to KV. No schedule file is written into the Git working tree.
+It reads the authoritative private YAML, creates coverage through the end of the month six months ahead, and overwrites the KV key `schedule`.
 
-## Monthly horizon
-
-The trusted on-call automation runs the same publisher at the beginning of every month. That maintains six months of visible future coverage without placing changing schedule data into source control. An authorized schedule change runs the publisher immediately after the authoritative on-call YAML is updated.
+Run it immediately after an authorized rotation change and monthly at the beginning of each month.
 
 ## Local verification
 
 ```bash
 python3 -m pip install -r requirements.txt
 python3 -m unittest discover -s tests -v
+node --test tests/test_worker.mjs
 node --check site/app.js
-node --check functions/api/schedule.js
 ```
 
-The UI needs the Pages Function and KV binding for live data, so a basic local static HTTP server will show the expected "temporarily unavailable" state unless a local function/KV emulator is configured.
+## Public-source boundary
+
+Do not commit roster names, email addresses, phone numbers, Telegram identities, generated schedules, Cloudflare API tokens, private endpoint URLs, or private state exports. The repository deliberately contains only code, generic documentation, and fictional test data.
