@@ -1,4 +1,32 @@
+import { resolveTheme, setTheme } from "./theme.mjs";
+
 const timeZone = "America/New_York";
+const storageKey = "isco-oncall-theme";
+
+function updateThemeToggle(theme) {
+  const button = document.getElementById("theme-toggle");
+  const label = document.getElementById("theme-label");
+  const nextTheme = theme === "dark" ? "light" : "dark";
+  button.setAttribute("aria-pressed", String(theme === "dark"));
+  button.setAttribute("aria-label", `Switch to ${nextTheme} mode`);
+  label.textContent = `${nextTheme[0].toUpperCase()}${nextTheme.slice(1)} mode`;
+}
+
+function initializeTheme() {
+  const theme = setTheme(
+    document,
+    resolveTheme(localStorage.getItem(storageKey), window.matchMedia("(prefers-color-scheme: dark)").matches),
+  );
+  updateThemeToggle(theme);
+  document.getElementById("theme-toggle").addEventListener("click", () => {
+    const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+    setTheme(document, nextTheme);
+    localStorage.setItem(storageKey, nextTheme);
+    updateThemeToggle(nextTheme);
+  });
+}
+
+initializeTheme();
 
 function parse(dateTime) {
   return new Date(dateTime);

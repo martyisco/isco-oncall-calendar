@@ -10,8 +10,15 @@
 <body>
   <main class="shell">
     <header class="masthead">
-      <p class="eyebrow">ISCO IT OPERATIONS</p>
-      <h1>After-Hours On-Call</h1>
+      <div class="header-row">
+        <div>
+          <p class="eyebrow">ISCO IT OPERATIONS</p>
+          <h1>After-Hours On-Call</h1>
+        </div>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to dark mode" aria-pressed="false">
+          <span aria-hidden="true">◐</span><span id="theme-label">Dark mode</span>
+        </button>
+      </div>
       <p id="timezone" class="subheading">Loading schedule…</p>
     </header>
 
@@ -40,6 +47,6 @@
       <span id="generated-at"></span>
     </footer>
   </main>
-  <script src="app.js" defer></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>

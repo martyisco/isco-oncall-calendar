@@ -22,4 +22,4 @@ jobs:
       - name: Validate schedule generator and KV publisher
         run: python -m unittest discover -s tests -v
       - name: Validate Worker and browser JavaScript
-        run: node --test tests/test_worker.mjs && node --check site/app.js && node --check worker/index.mjs
+        run: node --test tests/test_worker.mjs tests/test_theme.mjs && node --check site/app.js && node --check site/theme.mjs && node --check worker/index.mjs
