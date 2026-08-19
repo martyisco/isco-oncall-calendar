@@ -37,7 +37,7 @@ body { margin: 0; color: var(--ink); background: var(--background); font-family:
 .shell { max-width: 1120px; margin: 0 auto; padding: 52px 24px 28px; }
 .masthead { margin-bottom: 32px; }
 .header-row { display: flex; justify-content: space-between; align-items: start; gap: 20px; }
-.theme-toggle { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; font: inherit; font-size: .84rem; font-weight: 700; padding: 9px 12px; transition: background .18s ease, border-color .18s ease, transform .18s ease; }
+.theme-toggle { display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; border: 1px solid var(--line); border-radius: 50%; background: var(--surface); color: var(--ink); cursor: pointer; font: inherit; font-size: 1.25rem; transition: background .18s ease, border-color .18s ease, transform .18s ease; }
 .theme-toggle:hover { border-color: var(--blue); transform: translateY(-1px); }
 .theme-toggle:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
 .eyebrow { color: var(--blue); font-size: .72rem; font-weight: 800; letter-spacing: .12em; margin: 0 0 8px; }

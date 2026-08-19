@@ -5,11 +5,11 @@ const storageKey = "isco-oncall-theme";
 
 function updateThemeToggle(theme) {
   const button = document.getElementById("theme-toggle");
-  const label = document.getElementById("theme-label");
+  const icon = document.getElementById("theme-icon");
   const nextTheme = theme === "dark" ? "light" : "dark";
   button.setAttribute("aria-pressed", String(theme === "dark"));
   button.setAttribute("aria-label", `Switch to ${nextTheme} mode`);
-  label.textContent = `${nextTheme[0].toUpperCase()}${nextTheme.slice(1)} mode`;
+  icon.textContent = theme === "dark" ? "☀" : "☾";
 }
 
 function initializeTheme() {
